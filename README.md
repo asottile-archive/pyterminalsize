@@ -8,17 +8,23 @@ pyterminalsize
 A package to provide access to terminal size.
 
 It uses the following heuristics:
-- First it attemps the backported `shutil.get_terminal_size` (from python3.5)
-- Then it falls back to `tput` executable (so cygwin works)
+- It first attemps the backported `shutil.get_terminal_size` (from python3.5)
+    - Unlike the stdlib implementation it will try each of stdin, stdout, and
+      stderr to find terminal size whereas the stdlib only checks stdout.
+    - This means that terminal size can still be reported when piping as long
+      as one or more of the streams is not piped.
+- It then falls back to the `tput` executable (so cygwin works)
 - Failing all that, it returns a specified fallback (or `(80, 24)`)
 
-The structure it returns looks like:
+## Usage
 
 ```python
-Size(columns=80, lines=24, source='fallback')
+>>> from pyterminalsize import get_terminal_size
+>>> get_terminal_size()
+Size(columns=80, lines=61, source='stdin')
 ```
 
-Where source can be any of the values specified in `SizeSource`
+`source` can be any of the values specified in `SizeSource`
 
 ```python
 SizeSource(
