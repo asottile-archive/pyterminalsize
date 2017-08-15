@@ -13,8 +13,7 @@ def test_cygwin():
             (
                 'bash', '-c',
                 ' '.join(pipes.quote(part) for part in (
-                    sys.executable, '-m', 'coverage.__main__', 'run', '-p',
-                    path,
+                    sys.executable, '-m', 'coverage', 'run', path,
                 ))
             ),
             stdout=subprocess.PIPE,
