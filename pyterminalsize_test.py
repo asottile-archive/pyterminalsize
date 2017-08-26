@@ -77,10 +77,7 @@ def _test_file(contents):
 
 def run_with_coverage(contents, **kwargs):
     with _test_file(contents) as path:
-        return _run(
-            (sys.executable, '-m', 'coverage.__main__', 'run', '-p', path),
-            **kwargs
-        )
+        return _run((sys.executable, '-m', 'coverage', 'run', path), **kwargs)
 
 
 FROM_TPUT_PROG = (
