@@ -104,7 +104,7 @@ def test_from_tput_no_tput_on_path():
             '[Error 2] The system cannot find the file specified'
         ),
         key(win=False, py3=True): (
-            "[Errno 2] No such file or directory: 'tput'"
+            "[Errno 2] No such file or directory: 'tput': 'tput'"
         ),
         key(win=False, py3=False): (
             '[Errno 2] No such file or directory'
