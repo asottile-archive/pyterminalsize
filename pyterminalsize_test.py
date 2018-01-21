@@ -29,7 +29,7 @@ def dct_to_native(dct):
     return dict((to_n(k), to_n(v)) for k, v in dct.items())
 
 
-@pytest.yield_fixture(autouse=True, scope='session')
+@pytest.fixture(autouse=True, scope='session')
 def reset_terminal_size():
     size = pyterminalsize.get_terminal_size()
     yield
