@@ -6,7 +6,7 @@
 .coverage
 .tox
 .venv-touch
-/.cache
+/.pytest_cache
 /build
 /venv*
 coverage-html
