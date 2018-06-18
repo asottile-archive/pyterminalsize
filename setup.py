@@ -10,7 +10,7 @@ if sys.platform == 'win32':
         var for var in os.environ
         if var.startswith('VS') and var.endswith('COMNTOOLS')
     ]
-    vs = sorted(versions, key=lambda s: int(re.search('\d+', s).group()))[-1]
+    vs = sorted(versions, key=lambda s: int(re.search(r'\d+', s).group()))[-1]
     os.environ['VS90COMNTOOLS'] = os.environ[vs]  # py2
     os.environ['VS100COMNTOOLS'] = os.environ[vs]  # py3
 
