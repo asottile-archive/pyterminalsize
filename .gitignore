@@ -3,7 +3,7 @@
 *.py[cod]
 *.so
 .*.sw[a-z]
-.coverage
+/.coverage*
 .tox
 .venv-touch
 /.pytest_cache
