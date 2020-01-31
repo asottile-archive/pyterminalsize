@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
 
 import collections
-import contextlib
-import io
 import os
 import subprocess
 import sys
@@ -64,36 +62,14 @@ def _run(cmd, **kwargs):
     )
 
 
-@contextlib.contextmanager
-def _test_file(contents):
-    path = '_test_file.py'
-    with io.open(path, 'w') as test_file:
-        test_file.write(contents)
-    try:
-        yield path
-    finally:
-        os.remove(path)
-
-
-def run_with_coverage(contents, **kwargs):
-    with _test_file(contents) as path:
-        return _run((sys.executable, '-m', 'coverage', 'run', path), **kwargs)
-
-
-FROM_TPUT_PROG = (
-    'import pyterminalsize\n'
-    'try:\n'
-    '    print(pyterminalsize._from_tput())\n'
-    'except OSError as e:\n'
-    '    print("Caught OSError")\n'
-    '    print(e)\n'
-)
+def run_with_coverage(*args, **kwargs):
+    return _run((sys.executable, '-m', 'coverage', 'run') + args, **kwargs)
 
 
 def test_from_tput_no_tput_on_path():
     out, _ = run_with_coverage(
-        FROM_TPUT_PROG, stdout=subprocess.PIPE,
-        env={'PATH': '', 'TERM': 'dumb'},
+        '-m', 'testing.from_tput_prog',
+        stdout=subprocess.PIPE, env={'PATH': '', 'TERM': 'dumb'},
     )
     key = collections.namedtuple('key', ('win', 'py3'))
     error = {
@@ -112,13 +88,14 @@ def test_from_tput_no_tput_on_path():
     }
     assert out == (
         'Caught OSError\n'
-        '{0}\n'.format(error[key(win=WIN, py3=PY3)])
+        '{}\n'.format(error[key(win=WIN, py3=PY3)])
     )
 
 
 def test_from_tput_bs_terminal_proc_returncode():
     out, _ = run_with_coverage(
-        FROM_TPUT_PROG, stdout=subprocess.PIPE, env={'TERM': 'bs'},
+        '-m', 'testing.from_tput_prog',
+        stdout=subprocess.PIPE, env={'TERM': 'bs'},
     )
     assert out == (
         'Caught OSError\n'
@@ -128,7 +105,8 @@ def test_from_tput_bs_terminal_proc_returncode():
 
 def test_from_tput_no_term():
     out, _ = run_with_coverage(
-        FROM_TPUT_PROG, stdout=subprocess.PIPE, env={},
+        '-m', 'testing.from_tput_prog',
+        stdout=subprocess.PIPE, env={},
     )
     assert out == (
         'Caught OSError\n'
@@ -138,7 +116,7 @@ def test_from_tput_no_term():
 
 def test_from_tput_dumb_term():
     out, _ = run_with_coverage(
-        FROM_TPUT_PROG,
+        '-m', 'testing.from_tput_prog',
         # Both being a pipe is important, this makes tput lookup based on TERM
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -147,15 +125,9 @@ def test_from_tput_dumb_term():
     assert out == '(80, 24)\n'
 
 
-GET_TERMINAL_SIZE_PROG = (
-    'import pyterminalsize\n'
-    'print(pyterminalsize.get_terminal_size((10, 20)))\n'
-)
-
-
 def test_from_environment():
     out, _ = run_with_coverage(
-        GET_TERMINAL_SIZE_PROG,
+        '-m', 'testing.get_terminal_size_prog',
         stdout=subprocess.PIPE,
         env={'COLUMNS': '10', 'LINES': '20'},
     )
@@ -164,7 +136,7 @@ def test_from_environment():
 
 def test_get_from_tput():
     out, _ = run_with_coverage(
-        GET_TERMINAL_SIZE_PROG,
+        '-m', 'testing.get_terminal_size_prog',
         # when stdin / stdout / stderr are all pipes it will fall back to tput
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -176,7 +148,7 @@ def test_get_from_tput():
 
 def test_fallback():
     out, _ = run_with_coverage(
-        GET_TERMINAL_SIZE_PROG,
+        '-m', 'testing.get_terminal_size_prog',
         # when stdin / stdout / stderr are all pipes it will fall back to tput
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -187,21 +159,6 @@ def test_fallback():
     assert out == "Size(columns=10, lines=20, source='fallback')\n"
 
 
-CHANGES_SIZE_PROG = (
-    'from __future__ import print_function\n'
-    'import sys\n'
-    'import _pyterminalsize\n'
-    'import pyterminalsize\n'
-    'for fd in (0, 1, 2):\n'
-    '    try:\n'
-    '        _pyterminalsize.set_terminal_size(fd, 30, 40)\n'
-    "    # Allow this to fail, we're setting it on all the inputs / outputs\n"
-    '    except OSError:\n'
-    '        pass\n'
-    'print(pyterminalsize.get_terminal_size(), {0})\n'
-)
-
-
 @pytest.mark.parametrize('source', ('stdout', 'stderr'))
 def test_from_source(source):
     kwargs = {
@@ -210,13 +167,13 @@ def test_from_source(source):
         'stderr': subprocess.PIPE,
     }
     kwargs.pop(source)
-    src = CHANGES_SIZE_PROG.format(
-        'file=sys.stderr' if source == 'stdout' else 'file=sys.stdout',
+    arg = 'stderr' if source == 'stdout' else 'stdout'
+    out, err = run_with_coverage(
+        '-m', 'testing.changes_size_prog', arg, **kwargs
     )
-    out, err = run_with_coverage(src, **kwargs)
     output = err if source == 'stdout' else out
     assert output == (
-        "Size(columns=30, lines=40, source='{0}')\n".format(source)
+        "Size(columns=30, lines=40, source='{0}')".format(source)
     )
 
 
