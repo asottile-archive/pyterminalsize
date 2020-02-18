@@ -1,3 +1,9 @@
+# DEPRECATED
+
+In python>=3.6 use `get_terminal_size` from `os` / `shutil` directly.
+
+___
+
 [![Build Status](https://travis-ci.org/asottile/pyterminalsize.svg?branch=master)](https://travis-ci.org/asottile/pyterminalsize)
 [![Coverage Status](https://img.shields.io/coveralls/asottile/pyterminalsize.svg?branch=master)](https://coveralls.io/r/asottile/pyterminalsize)
 
